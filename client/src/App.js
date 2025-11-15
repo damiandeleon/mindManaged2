@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import MedSearch from "./pages/MedSearch";
 import PrivateRoute from "./components/routing/PrivateRoute";
 import "./App.css";
 
@@ -25,6 +26,14 @@ function App() {
                 element={
                   <PrivateRoute>
                     <Dashboard />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/medsearch"
+                element={
+                  <PrivateRoute>
+                    <MedSearch />
                   </PrivateRoute>
                 }
               />

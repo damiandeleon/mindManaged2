@@ -53,6 +53,15 @@ code {
   background-color: #545b62;
 }
 
+/* Remove underline from links styled as buttons */
+a.btn {
+  text-decoration: none;
+}
+
+a.btn:hover {
+  text-decoration: none;
+}
+
 .form-group {
   margin-bottom: 1rem;
 }
