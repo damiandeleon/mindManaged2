@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-// login is me@email.com and password is "fakepw"
+// login is me@email.com and password is "fakepw"  or dana@email.com and password is "fakepw2"
 
 const Login = () => {
   const [formData, setFormData] = useState({

@@ -63,6 +63,20 @@ const Dashboard = () => {
     tags: "",
   });
 
+  // Modal state for journal entry functionality
+  const [showJournalModal, setShowJournalModal] = useState(false);
+  const [journalForm, setJournalForm] = useState({
+    date: new Date().toISOString().split("T")[0],
+    title: "",
+    entry: "",
+  });
+
+  // Modal state for mood check-in confirmation
+  const [showMoodModal, setShowMoodModal] = useState(false);
+
+  // State for journal entry count
+  const [journalCount, setJournalCount] = useState(0);
+
   // useEffect hook to fetch dashboard data when component mounts
   useEffect(() => {
     /**
@@ -84,8 +98,21 @@ const Dashboard = () => {
       }
     };
 
-    // Call the fetch function when component mounts
+    /**
+     * Async function to fetch journal entry count
+     */
+    const fetchJournalCount = async () => {
+      try {
+        const res = await axios.get("/api/journals");
+        setJournalCount(res.data.length);
+      } catch (error) {
+        console.error("Error fetching journal count:", error);
+      }
+    };
+
+    // Call the fetch functions when component mounts
     fetchDashboardData();
+    fetchJournalCount();
   }, []); // Empty dependency array means this runs once on mount
 
   // Function to handle opening the add task modal
@@ -373,6 +400,68 @@ const Dashboard = () => {
     }
   };
 
+  // Function to open journal entry modal
+  const handleCreateJournalEntry = () => {
+    setShowJournalModal(true);
+    setJournalForm({
+      date: new Date().toISOString().split("T")[0],
+      title: "",
+      entry: "",
+    });
+  };
+
+  // Function to close journal modal
+  const handleCloseJournalModal = () => {
+    setShowJournalModal(false);
+    setJournalForm({
+      date: new Date().toISOString().split("T")[0],
+      title: "",
+      entry: "",
+    });
+  };
+
+  // Function to handle journal form input changes
+  const handleJournalInputChange = (e) => {
+    const { name, value } = e.target;
+    setJournalForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // Function to handle journal form submission
+  const handleSubmitJournal = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.post("/api/journals", journalForm);
+      handleCloseJournalModal();
+      // Update journal count
+      setJournalCount((prev) => prev + 1);
+      alert("Journal entry saved successfully!");
+    } catch (error) {
+      console.error("Error saving journal entry:", error);
+      alert("Error saving journal entry. Please try again.");
+    }
+  };
+
+  // Function to handle mood check-in
+  const handleMoodCheckIn = async (mood) => {
+    try {
+      await axios.post("/api/mood-checkins", {
+        mood,
+        datetime: new Date(),
+      });
+      setShowMoodModal(true);
+      // Auto-close modal after 2 seconds
+      setTimeout(() => {
+        setShowMoodModal(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Error saving mood check-in:", error);
+      alert("Error saving mood check-in. Please try again.");
+    }
+  };
+
   // Function to delete a task
   const handleDeleteTask = async (taskId) => {
     // Show confirmation dialog
@@ -485,55 +574,143 @@ const Dashboard = () => {
           {/* Quick Actions Card - Provides shortcuts to common tasks */}
           <div className="dashboard-card">
             <h3>Quick Actions</h3>
+            <p
+              style={{
+                color: "#666",
+                fontSize: "0.9rem",
+                marginBottom: "1rem",
+                lineHeight: "1.5",
+              }}
+            >
+              Become a taskmaster! Use the button below to quickly add tasks.
+              The more tasks you manage, the more in control you'll feel.
+            </p>
             <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
               {/* Button to quickly add a new task */}
               <button className="btn btn-primary" onClick={handleAddTask}>
                 Add Task
               </button>
-              {/* Button to track current mood (not yet functional) */}
-              <button className="btn btn-secondary">Track Mood</button>
-              {/* Link to medication lookup page */}
-              <Link to="/medsearch" className="btn btn-secondary">
-                Lookup Meds
-              </Link>
             </div>
           </div>
 
           {/* Recent Activity Card - Shows user's recent actions */}
           <div className="dashboard-card">
-            <h3>Recent Activity</h3>
-            {/* Placeholder content - will be replaced with actual activity data */}
-            <p>No recent activity to display.</p>
-            <p style={{ color: "#666", fontSize: "0.9rem" }}>
-              Start by creating your first task or goal!
+            <h3>Medication Lookup</h3>
+            <p
+              style={{
+                color: "#666",
+                fontSize: "0.9rem",
+                marginBottom: "1rem",
+                lineHeight: "1.5",
+              }}
+            >
+              This free service allows you to search for medications, view
+              dosages, and ingestion type to help you make informed decisions
+              about your health.
             </p>
+            {/* Link to medication lookup page */}
+            <Link
+              to="/medsearch"
+              className="btn btn-primary"
+              style={{ display: "inline-block" }}
+            >
+              Lookup Meds
+            </Link>
           </div>
         </div>
 
-        {/* Mental Health Check-in Card - Allows users to track their mood */}
-        <div className="dashboard-card">
-          <h3>Mental Health Check-in</h3>
-          <p>How are you feeling today?</p>
-          <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
-            {/* Mood tracking buttons - will save mood data when functional */}
-            <button
-              className="btn btn-secondary"
-              style={{ padding: "0.5rem 1rem" }}
+        {/* Third row: Mental Health and Journal */}
+        <div className="dashboard-grid">
+          {/* Mental Health Check-in Card - Allows users to track their mood */}
+          <div className="dashboard-card">
+            <h3>Mental Health Check-in</h3>
+            <p>How are you feeling today?</p>
+            <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
+              {/* Mood tracking buttons - will save mood data when functional */}
+              <button
+                className="btn btn-secondary"
+                style={{ padding: "0.5rem 1rem" }}
+                onClick={() => handleMoodCheckIn("great")}
+              >
+                😊 Great
+              </button>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: "0.5rem 1rem" }}
+                onClick={() => handleMoodCheckIn("okay")}
+              >
+                😐 Okay
+              </button>
+              <button
+                className="btn btn-secondary"
+                style={{ padding: "0.5rem 1rem" }}
+                onClick={() => handleMoodCheckIn("not_great")}
+              >
+                😔 Not Great
+              </button>
+            </div>
+            <div style={{ marginTop: "1rem" }}>
+              <Link to="/mood-trends" className="btn btn-primary">
+                View Trends
+              </Link>
+            </div>
+          </div>
+
+          {/* Journal Card - Allows users to create and view journal entries */}
+          <div className="dashboard-card">
+            <h3>Journal</h3>
+            <p>Record your thoughts and reflections</p>
+            <div
+              style={{
+                display: "flex",
+                gap: "1rem",
+                marginTop: "1rem",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
             >
-              😊 Great
-            </button>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: "0.5rem 1rem" }}
-            >
-              😐 Okay
-            </button>
-            <button
-              className="btn btn-secondary"
-              style={{ padding: "0.5rem 1rem" }}
-            >
-              😔 Not Great
-            </button>
+              <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleCreateJournalEntry}
+                >
+                  Create Entry
+                </button>
+                <Link to="/journal" className="btn btn-secondary">
+                  View Entries
+                </Link>
+              </div>
+              <div
+                style={{
+                  backgroundColor: "#f8f9fa",
+                  padding: "0.75rem 1.25rem",
+                  borderRadius: "8px",
+                  border: "2px solid #007bff",
+                }}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <div
+                    style={{
+                      fontSize: "1.5rem",
+                      fontWeight: "bold",
+                      color: "#007bff",
+                    }}
+                  >
+                    {journalCount}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "#666",
+                      marginTop: "0.25rem",
+                    }}
+                  >
+                    {journalCount === 1 ? "Entry" : "Entries"}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1517,6 +1694,198 @@ const Dashboard = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Journal Entry Modal */}
+      {showJournalModal && (
+        <div
+          className="modal-overlay"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            className="modal-content"
+            style={{
+              backgroundColor: "white",
+              padding: "2rem",
+              borderRadius: "8px",
+              width: "90%",
+              maxWidth: "600px",
+              maxHeight: "90vh",
+              overflow: "auto",
+            }}
+          >
+            <h2>Create Journal Entry</h2>
+            <form onSubmit={handleSubmitJournal}>
+              <div style={{ marginBottom: "1rem" }}>
+                <label
+                  htmlFor="journal-date"
+                  style={{
+                    display: "block",
+                    marginBottom: "0.5rem",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Date
+                </label>
+                <input
+                  type="date"
+                  id="journal-date"
+                  name="date"
+                  value={journalForm.date}
+                  onChange={handleJournalInputChange}
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem",
+                    border: "1px solid #ddd",
+                    borderRadius: "4px",
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: "1rem" }}>
+                <label
+                  htmlFor="journal-title"
+                  style={{
+                    display: "block",
+                    marginBottom: "0.5rem",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Title *
+                </label>
+                <input
+                  type="text"
+                  id="journal-title"
+                  name="title"
+                  value={journalForm.title}
+                  onChange={handleJournalInputChange}
+                  required
+                  placeholder="Enter a title for your journal entry"
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem",
+                    border: "1px solid #ddd",
+                    borderRadius: "4px",
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: "1.5rem" }}>
+                <label
+                  htmlFor="journal-entry"
+                  style={{
+                    display: "block",
+                    marginBottom: "0.5rem",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Entry *
+                </label>
+                <textarea
+                  id="journal-entry"
+                  name="entry"
+                  value={journalForm.entry}
+                  onChange={handleJournalInputChange}
+                  required
+                  rows="10"
+                  placeholder="Write your thoughts and reflections..."
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem",
+                    border: "1px solid #ddd",
+                    borderRadius: "4px",
+                    resize: "vertical",
+                  }}
+                />
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: "1rem",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={handleCloseJournalModal}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    border: "1px solid #ddd",
+                    backgroundColor: "white",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    padding: "0.5rem 1rem",
+                    backgroundColor: "#007bff",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Save Entry
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Mood Check-in Confirmation Modal */}
+      {showMoodModal && (
+        <div
+          className="modal-overlay"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            className="modal-content"
+            style={{
+              backgroundColor: "white",
+              padding: "2rem",
+              borderRadius: "8px",
+              width: "90%",
+              maxWidth: "400px",
+              textAlign: "center",
+            }}
+          >
+            <h2 style={{ marginBottom: "1rem", color: "#28a745" }}>✓</h2>
+            <h3 style={{ marginBottom: "0.5rem" }}>
+              Your check-in has been recorded
+            </h3>
+            <p style={{ color: "#666", margin: 0 }}>
+              Thank you for tracking your mood!
+            </p>
           </div>
         </div>
       )}

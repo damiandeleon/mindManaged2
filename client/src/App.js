@@ -7,6 +7,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import MedSearch from "./pages/MedSearch";
+import Journal from "./pages/Journal";
+import MoodTrends from "./pages/MoodTrends";
 import PrivateRoute from "./components/routing/PrivateRoute";
 import "./App.css";
 
@@ -34,6 +36,22 @@ function App() {
                 element={
                   <PrivateRoute>
                     <MedSearch />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/journal"
+                element={
+                  <PrivateRoute>
+                    <Journal />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/mood-trends"
+                element={
+                  <PrivateRoute>
+                    <MoodTrends />
                   </PrivateRoute>
                 }
               />
