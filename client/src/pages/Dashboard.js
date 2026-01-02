@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
+import cartoonOrangeTabby from "../lib/images/cartoonOrangeTabby.png";
+import tabbyHugging from "../lib/images/tabbyHugging.png";
+import tabbyJournaling from "../lib/images/tabbyJournaling.png";
+import tabbyNote from "../lib/images/tabbyNote.png";
 
 /**
  * Dashboard Component
@@ -77,6 +81,15 @@ const Dashboard = () => {
   // State for journal entry count
   const [journalCount, setJournalCount] = useState(0);
 
+  // Carousel state
+  const carouselImages = [
+    cartoonOrangeTabby,
+    tabbyHugging,
+    tabbyJournaling,
+    tabbyNote,
+  ];
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
   // useEffect hook to fetch dashboard data when component mounts
   useEffect(() => {
     /**
@@ -114,6 +127,17 @@ const Dashboard = () => {
     fetchDashboardData();
     fetchJournalCount();
   }, []); // Empty dependency array means this runs once on mount
+
+  // Carousel auto-rotation effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex(
+        (prevIndex) => (prevIndex + 1) % carouselImages.length
+      );
+    }, 3000); // Change image every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [carouselImages.length]);
 
   // Function to handle opening the add task modal
   const handleAddTask = () => {
@@ -508,9 +532,71 @@ const Dashboard = () => {
     <div>
       {/* Dashboard header with personalized welcome message */}
       <div className="dashboard-header">
-        <div className="container">
-          <h1>Welcome back, {user?.name}!</h1>
-          <p>Here's your productivity overview</p>
+        <div className="container" style={{ display: "flex" }}>
+          <div className="dashboard-welcome">
+            <h1>Welcome back, {user?.name}!</h1>
+            <p>Here's your productivity overview</p>
+          </div>
+          <div
+            id="carousel"
+            style={{
+              position: "relative",
+              width: "200px",
+              height: "200px",
+              margin: "20px auto",
+              overflow: "hidden",
+              borderRadius: "10px",
+              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            {carouselImages.map((image, index) => (
+              <img
+                key={index}
+                src={image}
+                alt={`Carousel ${index + 1}`}
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  opacity: currentImageIndex === index ? 1 : 0,
+                  transition: "opacity 1s ease-in-out",
+                }}
+              />
+            ))}
+            <div
+              style={{
+                position: "absolute",
+                bottom: "10px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                display: "flex",
+                gap: "8px",
+              }}
+            >
+              {carouselImages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  style={{
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: "50%",
+                    border: "none",
+                    backgroundColor:
+                      currentImageIndex === index
+                        ? "#007bff"
+                        : "rgba(255, 255, 255, 0.5)",
+                    cursor: "pointer",
+                    transition: "background-color 0.3s",
+                  }}
+                  aria-label={`Go to image ${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

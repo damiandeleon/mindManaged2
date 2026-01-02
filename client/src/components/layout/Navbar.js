@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import "./Navbar.css";
+import logo from "../../lib/images/cartoonOrangeTabby.png";
 
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -14,6 +15,12 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="container">
         <div className="navbar-brand">
+          <img
+            src={logo}
+            alt="Mind Managed Logo"
+            className="navbar-logo"
+            style={{ maxHeight: "35px", height: "35px" }}
+          />
           <Link to="/">Mind Managed</Link>
         </div>
         <div className="navbar-menu">

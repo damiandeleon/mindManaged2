@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import logo from "../lib/images/cartoonOrangeTabby.png";
 
 const Home = () => {
   const { isAuthenticated } = useAuth();
@@ -10,6 +11,12 @@ const Home = () => {
       <section className="hero-section">
         <div className="container">
           <h1>Mind Managed</h1>
+          <img
+            src={logo}
+            alt="Mind Managed Logo"
+            className="navbar-logo"
+            style={{ maxHeight: "75px", height: "75px" }}
+          />
           <p>Take control of your mental well-being and productivity</p>
           <div>
             {isAuthenticated ? (
